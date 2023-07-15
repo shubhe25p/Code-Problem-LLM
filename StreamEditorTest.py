@@ -1,9 +1,15 @@
-import streamlit as st
+def PromptingAndSubmit():
+    # returns user's input
+    input = null
 
-from streamlit_ace import st_ace
+def ProblemGenerator(user_input):
+    # returns GPT's output
+    input = null
 
-# Spawn a new Ace editor
-content = st_ace(language = 'python')
+def CodeEditorAndExecute():
+    # returns user code and execution result
+    input = null
 
-# Display editor's content as you type
-content
+def ScoreCalculator(user_code, execution_result, time_to_execute, mem_alloc):
+    # returns score and feedback
+    input = null
