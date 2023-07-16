@@ -12,8 +12,14 @@ from langchain.schema import (
     HumanMessage,
     AIMessage
 )
-openai.api_key='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'
-os.environ["OPENAI_API_KEY"] = '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'
+from dotenv import load_dotenv
+load_dotenv()
+
+
+openai.api_key= os.getenv("OPENAI_API_KEY")
+openai.api_key= os.getenv("OPENAI_API_KEY")
+OPEN_MODEL_ID = "gpt-4-0613"
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 chat = ChatOpenAI(model="gpt-4-0613", temperature=0) 
 
 system_prompt_for_score = """
@@ -110,7 +116,6 @@ def CodeEditorAndExecute():
     # returns user code and execution result
     col1, col2 = st.columns(2)
     execute = False
-    user_code = ''
     with col1:
         user_code = st_ace(language = 'python', theme = 'cobalt')
     
@@ -135,30 +140,41 @@ def ScoreCalculator(user_code, execution_result, time_to_execute, mem_alloc):
 
 
 # Create a text input widget
+
 user_input = st.text_input("problem area: ")
 selection = st.selectbox('Choose a number:', options=[1, 2, 3, 4, 5])
+
 # Create a submit button
 if st.button("Submit"):
     # If the Submit button is pushed
     result = ProblemGenerator(user_input, selection)
     st.write(result)
-    col1, col2 = st.columns(2)
-    execute = False
-    user_code = ''
-    output = ''
-    time_to_execute = None
-    mem_alloc = None
-    with col1:
-        user_code = st_ace(language = 'python', theme = 'cobalt')
+    # col1, col2 = st.columns(2)
+    # execute = False
+    # user_code = ''
+    # output = ''
+    # time_to_execute = None
+    # mem_alloc = None
+    # with col1:
     
-    with col2:
-        st.header('Execution Result')
-        if user_code:
-            output, time_to_execute, mem_alloc = exec_code(user_code)
-            st.write(output)
-            st.subheader('Metrics')
-            st.write('Time to execute: ' + str(time_to_execute))
-            st.write('Memory allocated: ' + str(mem_alloc))
+    # with col2:
+    #     st.header('Execution Result')
+    #     if user_code:
+    #         output, time_to_execute, mem_alloc = exec_code(user_code)
+    #         st.write(output)
+    #         st.subheader('Metrics')
+    #         st.write('Time to execute: ' + str(time_to_execute))
+    #         st.write('Memory allocated: ' + str(mem_alloc))
     
-    if st.button("Submit TO GPT-4"):
-        ScoreCalculator(user_code, output, time_to_execute, mem_alloc)
+    # if st.button("Submit TO GPT-4"):
+    #     
+user_code = st_ace(language = 'python', theme = 'cobalt')
+if user_code:
+    st.header('Execution Result')
+    output, time_to_execute, mem_alloc = exec_code(user_code)
+    st.write(output)
+    st.subheader('Metrics')
+    st.write('Time to execute: ' + str(time_to_execute))
+    st.write('Memory allocated: ' + str(mem_alloc))
+    ScoreCalculator(user_code, output, time_to_execute, mem_alloc)
+
