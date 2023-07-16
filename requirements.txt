@@ -3,6 +3,3 @@ openai
 langchain
 psutil
 dotenv
-os
-re
-time
