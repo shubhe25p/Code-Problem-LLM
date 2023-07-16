@@ -167,9 +167,7 @@ if st.button("Submit"):
     #     
 user_code = st_ace(language = 'python', theme = 'cobalt')
 if user_code:
-    st.header('Execution Result')
     output, time_to_execute, mem_alloc = exec_code(user_code)
-    st.write(output)
     st.subheader('Metrics')
     st.write('Time to execute: ' + str(time_to_execute))
     st.write('Memory allocated: ' + str(mem_alloc))
