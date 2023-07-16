@@ -5,6 +5,46 @@ from langchain import LLMChain
 import time
 import os
 import psutil
+import openai
+import re
+from langchain.schema import (
+    SystemMessage,
+    HumanMessage,
+    AIMessage
+)
+openai.api_key='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'
+os.environ["OPENAI_API_KEY"] = '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'
+chat = ChatOpenAI(model="gpt-4-0613", temperature=0) 
+
+system_prompt_for_score = """
+Given some code and execution time and memory allocation as json, give a score from 0-100 in percentage and feedback in text and code also: Follow this format for sample input and output?
+
+Input: 
+Code: class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        int n = nums.length;
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = i + 1; j < n; j++) {
+                if (nums[i] + nums[j] == target) {
+                    return new int[]{i, j};
+                }
+            }
+        }
+        return new int[]{}; // No solution found
+    }
+}
+
+Time to Execute: 1ms
+Memory Allocation: 0.5Mb
+
+Output: 
+Feedback: [Generate text here]
+
+Score: [Generate score here from 0-100 in percentage]
+
+Improved Code: [based on the feedback give updated code here]
+
+Don't output anything else. Only output these 3 parts."""
 
 def get_memory_usage():
     # Returns the memory usage in MB
@@ -26,25 +66,10 @@ def exec_code(code):
 
     return result, elapsed_time, memory_used
 
-os.environ["OPENAI_API_KEY"] = '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'
-chat = ChatOpenAI(model="gpt-4", temperature=0) 
 
-
-def prompting_and_submit_streamlit():
-    # Create a text input widget
-    user_input = st.text_input("problem area: ")
-
-    # Create a submit button
-    if st.button("Submit"):
-        # If the Submit button is pushed
-        return user_input
-    return None
-
-def complexity_level():
-    # Create a selectbox with options 1 through 5
-    selection = st.selectbox('Choose a number:', options=[1, 2, 3, 4, 5])
-    # Return the selection
-    return selection
+def formatresult(result):
+    match = re.search(r'Code(.*)', result)
+    st.code(match.group(1))
 
 def ProblemGenerator(user_input, level):
     smg = '''You are an AI code examiner. You have to create an examination task for Python developers.
@@ -79,34 +104,61 @@ def ProblemGenerator(user_input, level):
     #print(result.content)
     return result.content
 
+
+
 def CodeEditorAndExecute():
     # returns user code and execution result
     col1, col2 = st.columns(2)
     execute = False
+    user_code = ''
     with col1:
         user_code = st_ace(language = 'python', theme = 'cobalt')
-        execute = st.button('Execute')
     
     with col2:
         st.header('Execution Result')
-        if execute:
+        if user_code:
+            output, time_to_execute, mem_alloc = exec_code(user_code)
+            st.write(output)
+            st.subheader('Metrics')
+            st.write('Time to execute: ' + str(time_to_execute))
+            st.write('Memory allocated: ' + str(mem_alloc))
+            return user_code, output, time_to_execute, mem_alloc
+    
+
+def ScoreCalculator(user_code, execution_result, time_to_execute, mem_alloc):
+    # returns score and feedback
+    user_prompt = f"Code: {user_code}\nTime to Execute: {time_to_execute}\nMemory Allocation: {mem_alloc}\nExpected Output: {execution_result}\n\n"
+    completion = openai.ChatCompletion.create(model="gpt-4-0613",messages=[{"role": "system", "content": system_prompt_for_score},{"role": "user", "content": user_prompt}])
+    result = completion.choices[0].message.content
+    formatresult(result)
+    st.write(result)
+
+
+# Create a text input widget
+user_input = st.text_input("problem area: ")
+selection = st.selectbox('Choose a number:', options=[1, 2, 3, 4, 5])
+# Create a submit button
+if st.button("Submit"):
+    # If the Submit button is pushed
+    result = ProblemGenerator(user_input, selection)
+    st.write(result)
+    col1, col2 = st.columns(2)
+    execute = False
+    user_code = ''
+    output = ''
+    time_to_execute = None
+    mem_alloc = None
+    with col1:
+        user_code = st_ace(language = 'python', theme = 'cobalt')
+    
+    with col2:
+        st.header('Execution Result')
+        if user_code:
             output, time_to_execute, mem_alloc = exec_code(user_code)
             st.write(output)
             st.subheader('Metrics')
             st.write('Time to execute: ' + str(time_to_execute))
             st.write('Memory allocated: ' + str(mem_alloc))
     
-    return user_code, output, time_to_execute, mem_alloc
-
-
-
-
-def ScoreCalculator(user_code, execution_result, time_to_execute, mem_alloc):
-    # returns score and feedback
-    input = null
-
-prompt = prompting_and_submit_streamlit()
-level = complexity_level()
-problem = ProblemGenerator(prompt, level)
-user_code, execution_result, time_to_execute, mem_alloc = CodeEditorAndExecute()
-# score, feedback = ScoreCalculator(user_code, execution_result, time_to_execute, mem_alloc)
+    if st.button("Submit TO GPT-4"):
+        ScoreCalculator(user_code, output, time_to_execute, mem_alloc)
