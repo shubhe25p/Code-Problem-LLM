@@ -12,14 +12,11 @@ from langchain.schema import (
     HumanMessage,
     AIMessage
 )
-from dotenv import load_dotenv
-load_dotenv()
 
 
-openai.api_key= os.getenv("OPENAI_API_KEY")
-openai.api_key= os.getenv("OPENAI_API_KEY")
+openai.api_key= st.secrets('OPENAI_API_KEY')
 OPEN_MODEL_ID = "gpt-4-0613"
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+os.environ["OPENAI_API_KEY"] = st.secrets('OPENAI_API_KEY')
 chat = ChatOpenAI(model="gpt-4-0613", temperature=0) 
 
 system_prompt_for_score = """
