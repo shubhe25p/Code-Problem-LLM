@@ -142,7 +142,7 @@ def ScoreCalculator(user_code, execution_result, time_to_execute, mem_alloc):
 # Create a text input widget
 
 user_input = st.text_input("problem area: ")
-selection = st.selectbox('Choose a number:', options=[1, 2, 3, 4, 5])
+selection = st.selectbox('Choose a complexity:', options=[1, 2, 3, 4, 5])
 
 # Create a submit button
 if st.button("Submit"):
