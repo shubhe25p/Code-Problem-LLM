@@ -1,3 +1,4 @@
 streamlit-ace
 openai
 langchain
+psutil
